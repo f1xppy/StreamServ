@@ -10,4 +10,5 @@ class AuthorBase(BaseModel):
 class Author(AuthorBase):
     id: int = Field(title="Идентификатор исполнителя/группы")
     tracks: list = Field(title="Треки исполнителя/группы")
+    albums: list = Field(title="Альбомы исполнителя/группы")
     info: dict = Field(title="Информация о исполнителе/группе")
