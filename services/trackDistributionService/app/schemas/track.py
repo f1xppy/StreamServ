@@ -2,6 +2,12 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
+FAKE_TRACK_INFO = {
+    "date": "01.01.2021",
+    "label": "xxx"
+}
+
+
 class TrackBase(BaseModel):
     name: str = Field(title="Название трека")
     authorID: int = Field(title="Идентификатор исполнителя")
@@ -10,5 +16,5 @@ class TrackBase(BaseModel):
 
 
 class Track(TrackBase):
-    id: int = Field(title="Идентификатор трека")
-    info: dict = Field(title="Информация о треке")
+    trackID: int = Field(title="Идентификатор трека")
+    info: dict = Field(title="Информация о треке", default=FAKE_TRACK_INFO)

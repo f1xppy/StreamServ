@@ -4,116 +4,86 @@ from .schemas.author import Author, AuthorBase
 from .schemas.track import Track, TrackBase
 from .schemas.album import Album, AlbumBase
 import typing
+from . import crud
+from .database.database import db
 
-FAKE_AUTHOR_INFO = {
-    "links": "https://vk.com/flxppy",
-    "country": "Россия"
-}
-FAKE_TRACK_INFO = {
-    "date": "01.01.2021",
-    "label": "xxx"
-}
-FAKE_ALBUM_INFO = {
-    "date": "01.01.2021"
-}
 
 app = FastAPI(
     version="0.1", title="Track Distribution Service"
 )
-authors: typing.Dict[int, Author] = {}
-tracks: typing.Dict[int, Track] = {}
-albums: typing.Dict[int, Album] = {}
 
 
 @app.post(
     "/authors", status_code=201, response_model=Author,
     summary="Добавляет исполнителя в базу"
 )
-async def add_author(author: AuthorBase) -> Author:
-    localAuthorID = int(len(authors) + 1)
-    localTracks = []
-    localAlbums = []
-
-    if localAuthorID in tracks:
-        i = 1
-        while i != len(tracks) + 1:
-            if (tracks[i].authorID == localAuthorID or
-                    localAuthorID in tracks[i].featuringAuthorID):
-                localTracks.append(i)
-            i += 1
-
-    if localAuthorID in albums:
-        i = 1
-        while i != len(albums) + 1:
-            if (albums[i].authorID == localAuthorID or
-                    localAuthorID in albums[i].featuringAuthorID):
-                localAlbums.append(i)
-            i += 1
-
-    result = Author(**author.dict(), id=len(authors) + 1, tracks=localTracks,
-                    albums=localAlbums, info=FAKE_AUTHOR_INFO)
-    authors[result.id] = result
-
-    return result
+async def add_author(author: AuthorBase):
+    authorId = db.author.count_documents({}) + 1
+    while True:
+        _author = db.author.find_one({"authorID": authorId}, {'_id': 0})
+        if _author == None:
+           break
+        authorId += 1
+    result = Author(**author.dict(), tracks=[], albums=[], authorID=authorId)
+    return crud.create_author(result)
 
 
 @app.post(
-    "/albums", status_code=203, response_model=Album, summary="Добавляет альбом в базу"
+    "/albums", status_code=202, response_model=Album, summary="Добавляет альбом в базу"
 )
-async def add_album(album: AlbumBase) -> Album:
-    localAlbumID = int(len(albums)) + 1
-    localTracks = []
-    if localAlbumID in tracks:
-        i = 1
-        while i != len(albums) + 1:
-            if (albums[i].authorID == localAlbumID or
-                    localAlbumID in albums[i].featuringAuthorID):
-                localTracks.append(i)
-            i += 1
-    result = Album(**album.dict(), id=len(albums) + 1, tracks = localTracks, info=FAKE_ALBUM_INFO)
-    albums[result.id] = result
-
-    return result
+async def add_album(album: AlbumBase):
+    albumId = db.album.count_documents({}) + 1
+    while True:
+        _album = db.album.find_one({"albumID": albumId}, {'_id': 0})
+        if _album == None:
+            break
+        albumId += 1
+    result = Album(**album.dict(), tracks=[], albumID=albumId)
+    return crud.create_album(result)
 
 
 @app.post(
-    "/tracks", status_code=202, response_model=Track, summary="Добавляет трек в базу"
+    "/tracks", status_code=203, response_model=Track, summary="Добавляет трек в базу"
 )
-async def add_track(track: TrackBase) -> Track:
-    result = Track(
-        **track.dict(), id=len(tracks) + 1, info=FAKE_TRACK_INFO
-    )
-    tracks[result.id] = result
-    return result
+async def add_track(track: TrackBase):
+    trackId = db.track.count_documents({}) + 1
+    while True:
+        _track = db.track.find_one({"trackID": trackId}, {'_id': 0})
+        if _track == None:
+            break
+        trackId += 1
+    result = Track(**track.dict(), trackID=trackId)
+    return crud.create_track(result)
 
 
 @app.get(
     "/authors", summary="Возвращает список исполнителей", response_model=list[Author]
 )
-async def get_authors_list() -> typing.Iterable[Author]:
-    return [v for k, v in authors.items()]
+async def get_authors_list():
+    return crud.get_authors()
 
 
 @app.get(
     "/albums", summary="Возвращает список альбомов", response_model=list[Album]
 )
 async def get_albums_list() -> typing.Iterable[Album]:
-    return [v for k, v in albums.items()]
+    return crud.get_albums()
 
 
 @app.get(
     "/tracks", summary="Возвращает список треков", response_model=list[Track]
 )
 async def get_tracks_list() -> typing.Iterable[Track]:
-    return [v for k, v in tracks.items()]
+    return crud.get_tracks()
 
 
 @app.get(
     "/authors/{authorId}", summary="Возвращает информацию о конкретном исполнителе"
 )
 async def get_author_info(authorId: int):
-    if authorId in authors:
-        return authors[authorId]
+    author = crud.get_author(authorId)
+    if author != None:
+        return author
     return JSONResponse(status_code=404, content={"message": "Item not found"})
 
 
@@ -121,8 +91,9 @@ async def get_author_info(authorId: int):
     "/albums/{albumId}", summary="Возвращает информацию о конкретном альбоме"
 )
 async def get_album_info(albumId: int):
-    if albumId in authors:
-        return authors[albumId]
+    album = crud.get_album(albumId)
+    if album != None:
+        return album
     return JSONResponse(status_code=404, content={"message": "Item not found"})
 
 
@@ -130,8 +101,9 @@ async def get_album_info(albumId: int):
     "/tracks/{trackId}", summary="Возвращает информацию о конкретном треке"
 )
 async def get_track_info(trackId: int):
-    if trackId in tracks:
-        return tracks[trackId]
+    track = crud.get_track(trackId)
+    if track != None:
+        return track
     return JSONResponse(status_code=404, content={"message": "Item not found"})
 
 
@@ -139,85 +111,34 @@ async def get_track_info(trackId: int):
     "/authors/{authorId}", summary="Обновляет информацию об исполнителе"
 )
 async def update_author(authorId: int, author: AuthorBase):
-    if authorId in authors:
-        localAuthorID = authorId
-        localTracks = []
-        localAlbums = []
-
-        if localAuthorID in tracks:
-            i = 1
-            while i != len(tracks) + 1:
-                if (tracks[i].authorID == localAuthorID or
-                        localAuthorID in tracks[i].featuringAuthorID):
-                    localTracks.append(i)
-                i += 1
-
-        if localAuthorID in albums:
-            i = 1
-            while i != len(albums) + 1:
-                if (albums[i].authorID == localAuthorID or
-                        localAuthorID in albums[i].featuringAuthorID):
-                    localAlbums.append(i)
-                i += 1
-
-        result = Author(**author.dict(), id=authorId, tracks=localTracks,
-                        albums=localAlbums, info=FAKE_AUTHOR_INFO)
-        authors[authorId] = result
-
-        return result
-
-    return JSONResponse(status_code=404, content={"message": "Item not found"})
+    result = AuthorBase(**author.dict())
+    return crud.update_author(authorId, result)
 
 
 @app.put(
-    "/albums/albumId", summary="Добавляет альбом в базу"
+    "/albums/{albumId}", summary="Добавляет альбом в базу"
 )
-async def update_album(albumId: int, album: AlbumBase):
-    localAlbumID = albumId
-    localTracks = []
-    if localAlbumID in tracks:
-        i = 1
-        while i != len(albums) + 1:
-            if (albums[i].authorID == localAlbumID or
-                    localAlbumID in albums[i].featuringAuthorID):
-                localTracks.append(i)
-            i += 1
-    result = Album(**album.dict(), id=albumId, tracks = localTracks, info=FAKE_ALBUM_INFO)
-    albums[albumId] = result
-
-    return result
+async def update_album(albumId: int, name: str):
+    return crud.update_album(albumId, name)
 
 
 @app.put(
-    "/tracks/trackId", summary="Добавляет трек в базу"
+    "/tracks/{trackId}", summary="Добавляет трек в базу"
 )
-async def update_track(trackId: int, track: TrackBase):
-    result = Track(
-        **track.dict(), id=trackId, info=FAKE_TRACK_INFO
-    )
-    tracks[trackId] = result
-    return result
+async def update_track(trackId: int, name: str):
+    return crud.update_track(trackId, name)
 
 
 @app.delete("/authors/{authorId}", summary="Удаляет исполнителя из базы")
 async def delete_author(authorId: int):
-    if authorId in authors:
-        del authors[authorId]
-        return JSONResponse(status_code=200, content={"message": "Item successfully deleted"})
-    return JSONResponse(status_code=404, content={"message": "Item not found"})
+    return crud.delete_author(authorId)
 
 
 @app.delete("/albums/{albumId}", summary="Удаляет альбом из базы")
 async def delete_album(albumId: int):
-    if albumId in albums:
-        del authors[albumId]
-        return JSONResponse(status_code=200, content={"message": "Item successfully deleted"})
-    return JSONResponse(status_code=404, content={"message": "Item not found"})
+    return crud.delete_album(albumId)
 
 
 @app.delete("/tracks/{trackId}", summary="Удаляет трек из базы")
 async def delete_track(trackId: int):
-    if trackId in tracks:
-        del tracks[trackId]
-        return JSONResponse(status_code=200, content={"message": "Item successfully deleted"})
-    return JSONResponse(status_code=404, content={"message": "Item not found"})
+    return crud.delete_track(trackId)
