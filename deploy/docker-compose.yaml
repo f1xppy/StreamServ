@@ -43,4 +43,8 @@ services:
       - "27019:27019"
     environment:
       - MONGO_INITDB_DATABASE=StreamServ
-
+  trackdistributionservice:
+    image: streamserv/trackdistributionservice
+    ports:
+    - "5000:5000"
+    
