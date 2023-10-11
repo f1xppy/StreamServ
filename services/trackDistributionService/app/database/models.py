@@ -1,4 +1,4 @@
-from .database import db, client
+from .database import db
 from model.pymongo_model import SimpleModel
 
 
