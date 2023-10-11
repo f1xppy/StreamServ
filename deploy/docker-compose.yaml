@@ -46,5 +46,7 @@ services:
   trackdistributionservice:
     image: streamserv/trackdistributionservice
     ports:
-    - "5000:5000"
+      - "5000:5000"
+    environment:
+      MONGO_DSN='mongodb://StreamServ:StreamServ@127.0.0.1:27017'
     
