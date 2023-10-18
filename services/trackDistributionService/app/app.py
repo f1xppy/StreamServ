@@ -1,5 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, Depends
+import pymongo
+from fastapi import FastAPI, UploadFile, File, Depends, Body
 from fastapi.responses import JSONResponse
+import json
+
 from .schemas.author import Author, AuthorBase
 from .schemas.track import Track, TrackBase
 from .schemas.album import Album, AlbumBase
@@ -45,13 +48,14 @@ async def add_album(album: AlbumBase):
 @app.post(
     "/tracks", status_code=203, response_model=Track, summary="Добавляет трек в базу"
 )
-async def add_track(track: TrackBase, file: UploadFile):
-    trackId = db.track.count_documents({}) + 1
-    while True:
-        _track = db.track.find_one({"trackID": trackId}, {'_id': 0})
-        if _track == None:
-            break
-        trackId += 1
+async def add_track(file: UploadFile, track=Body()):
+    track = TrackBase(**json.loads(track))
+
+    _track = db.track.find_one(sort=[("trackID", -1)])
+    if _track == None:
+        trackId = 1
+    else:
+        trackId = int(_track["trackID"])+1
     result = Track(**track.dict(), trackID=trackId)
     crud.upload_track_file(file, result.trackID)
     return crud.create_track(result)
