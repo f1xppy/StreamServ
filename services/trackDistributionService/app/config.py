@@ -1,6 +1,5 @@
 from pydantic import MongoDsn, Field
 from pydantic_settings import BaseSettings
-import pydantic_core
 
 
 class Config(BaseSettings):
@@ -19,6 +18,28 @@ class Config(BaseSettings):
         env='BOOL_EXAMPLE',
         alias='BOOL_EXAMPLE'
     )
+    minio_access_key: str = Field(
+        default=' ',
+        env='MINIO_ACCESS_KEY',
+        alias='MINIO_ACCESS_KEY'
+    )
+    minio_secret_key: str = Field(
+        default=' ',
+        env='MINIO_SECRET_KEY',
+        alias='MINIO_SECRET_KEY'
+    )
+    minio_root_user: str = Field(
+        default=' ',
+        env='MINIO_ROOT_USER',
+        alias='MINIO_ROOT_USER'
+    )
+    minio_root_password: str = Field(
+        default=' ',
+        env='MINIO_ROOT_PASSWORD',
+        alias='MINIO_ROOT_PASSWORD'
+    )
+
+
 
     class Config:
         env_file = ".env"

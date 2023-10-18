@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from fastapi import UploadFile, File, Form
 
 
 FAKE_TRACK_INFO = {
@@ -11,7 +12,7 @@ FAKE_TRACK_INFO = {
 class TrackBase(BaseModel):
     name: str = Field(title="Название трека")
     authorID: int = Field(title="Идентификатор исполнителя")
-    featuringAuthorID: Optional[list] = Field(title="Идентификаторы других исполнителей")
+    featuringAuthorID: Optional[list[int]] = Field(title="Идентификаторы других исполнителей")
     albumID: int = Field(title="Идентификатор альбома")
 
 

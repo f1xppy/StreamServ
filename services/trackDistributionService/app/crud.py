@@ -4,6 +4,10 @@ from .schemas.album import Album
 from .database.models import AuthorDB, AlbumDB, TrackDB
 from .database.database import db
 from fastapi.responses import JSONResponse
+import minio
+import os
+from fastapi import File
+from .database.database import cfg
 
 
 def create_author(result: Author):
@@ -123,3 +127,19 @@ def delete_track(ID: int):
         db.track.delete_one({"trackID": ID})
         return JSONResponse(status_code=200, content={"message": "Item successfully deleted"})
     return JSONResponse(status_code=404, content={"message": "Item not found"})
+
+
+def upload_track_file(file: File, ID: int):
+    client = minio.Minio(
+        '127.0.0.1:9000',
+        access_key=cfg.minio_access_key,
+        secret_key=cfg.minio_secret_key,
+        secure=False
+    )
+
+    bucketName = "tracks"
+    found = client.bucket_exists(bucketName)
+    if not found:
+        client.make_bucket(bucketName)
+    objectName = str(ID)
+    client.fput_object(bucketName, objectName, file.file.fileno(), "audio/*")
