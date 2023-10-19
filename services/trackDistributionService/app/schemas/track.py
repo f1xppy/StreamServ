@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from fastapi import UploadFile, File, Form
 
 
 FAKE_TRACK_INFO = {

@@ -1,8 +1,6 @@
-import pymongo
-from fastapi import FastAPI, UploadFile, File, Depends, Body
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, UploadFile, Body
+from fastapi.responses import JSONResponse, FileResponse
 import json
-
 from .schemas.author import Author, AuthorBase
 from .schemas.track import Track, TrackBase
 from .schemas.album import Album, AlbumBase
@@ -46,10 +44,15 @@ async def add_album(album: AlbumBase):
 
 
 @app.post(
-    "/tracks", status_code=203, response_model=Track, summary="Добавляет трек в базу"
+    "/tracks", status_code=203, response_model=Track, summary='Добавляет трек в базу     {"name": "sdgsfgsd", "authorID": 1, "featuringAuthorID": [], "albumID": 1}'
 )
+#{"name": "sdgsfgsd", "authorID": 1, "featuringAuthorID": [], "albumID": 1}
 async def add_track(file: UploadFile, track=Body()):
-    track = TrackBase(**json.loads(track))
+    try:
+        track = TrackBase(**json.loads(track))
+    except Exception:
+        return JSONResponse(status_code=422, content={"message": "Wrong input"})
+
 
     _track = db.track.find_one(sort=[("trackID", -1)])
     if _track == None:
@@ -110,6 +113,16 @@ async def get_track_info(trackId: int):
     if track != None:
         return track
     return JSONResponse(status_code=404, content={"message": "Item not found"})
+
+'''@app.get(
+    "/tracks/{trackId}", summary="Возвращает файл конкретного трека"
+)
+async def get_track_info(trackId: int):
+    track = crud.get_track(trackId)
+    if track != None:
+        result = crud.download_track_file(str(track["trackID"]))
+        return
+    return JSONResponse(status_code=404, content={"message": "Item not found"})'''
 
 
 @app.put(

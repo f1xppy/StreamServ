@@ -5,7 +5,6 @@ from .database.models import AuthorDB, AlbumDB, TrackDB
 from .database.database import db
 from fastapi.responses import JSONResponse
 import minio
-import os
 from fastapi import File
 from .database.database import cfg
 
@@ -143,3 +142,18 @@ def upload_track_file(file: File, ID: int):
         client.make_bucket(bucketName)
     objectName = str(ID)
     client.fput_object(bucketName, objectName, file.file.fileno(), "audio/*")
+
+
+'''def download_track_file(ID: str):
+    client = minio.Minio(
+        '127.0.0.1:9000',
+        access_key=cfg.minio_access_key,
+        secret_key=cfg.minio_secret_key,
+        secure=False
+    )
+
+    bucketName = "tracks"
+    found = client.bucket_exists(bucketName)
+    if not found:
+        return 0
+    return client.fget_object(bucketName, ID, )'''
