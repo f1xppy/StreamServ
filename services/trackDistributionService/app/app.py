@@ -7,11 +7,16 @@ from .schemas.album import Album, AlbumBase
 import typing
 from . import crud
 from .database.database import db
+import os
+from fastapi.background import BackgroundTasks
 
 
 app = FastAPI(
     version="0.1", title="Track Distribution Service"
 )
+
+def remove_file(path:str):
+    os.remove(path)
 
 
 @app.post(
@@ -52,7 +57,6 @@ async def add_track(file: UploadFile, track=Body()):
         track = TrackBase(**json.loads(track))
     except Exception:
         return JSONResponse(status_code=422, content={"message": "Wrong input"})
-
 
     _track = db.track.find_one(sort=[("trackID", -1)])
     if _track == None:
@@ -119,12 +123,13 @@ async def get_track_info(trackId: int):
 @app.get(
     "/tracks/{trackId}/download", summary="Возвращает файл конкретного трека"
 )
-async def get_track_info(trackId: int):
+async def get_track_file(trackId: int, background_tasks:BackgroundTasks):
     track = crud.get_track(trackId)
     if track != None:
         name = str(track["name"])
-        path = f"{name}.mp3"
+        path = f"tracks/{name}.mp3"
         result = crud.get_track_file(str(track["trackID"]), path)
+        background_tasks.add_task(remove_file, path)
         return FileResponse(path, media_type="audio/mp3")
     return JSONResponse(status_code=404, content={"message": "Item not found"})
 

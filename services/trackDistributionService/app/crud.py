@@ -142,21 +142,23 @@ def delete_track(ID: int):
 
 
 def upload_track_file(file: File, ID: int):
+    if file.content_type != "audio/mpeg":
+        return True
+
     client = minio.Minio(
         '127.0.0.1:9000',
         access_key=cfg.minio_access_key,
         secret_key=cfg.minio_secret_key,
         secure=False
     )
-
+    
     bucketName = "tracks"
     found = client.bucket_exists(bucketName)
     if not found:
         client.make_bucket(bucketName)
     objectName = str(ID)
-    if file.content_type != "audio/mp3":
-        return True
-    client.fput_object(bucketName, objectName, file.file.fileno(), "audio/mp3")
+    
+    client.fput_object(bucketName, objectName, file.file.fileno(), "audio/mpeg")
     return False
 
 
