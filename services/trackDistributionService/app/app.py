@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, Body
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 import json
 from .schemas.author import Author, AuthorBase
 from .schemas.track import Track, TrackBase
@@ -60,7 +60,9 @@ async def add_track(file: UploadFile, track=Body()):
     else:
         trackId = int(_track["trackID"])+1
     result = Track(**track.dict(), trackID=trackId)
-    crud.upload_track_file(file, result.trackID)
+    error = crud.upload_track_file(file, result.trackID)
+    if error:
+        return JSONResponse(status_code=422, content={"message": "File is not .mp3"})
     return crud.create_track(result)
 
 
@@ -114,15 +116,17 @@ async def get_track_info(trackId: int):
         return track
     return JSONResponse(status_code=404, content={"message": "Item not found"})
 
-'''@app.get(
-    "/tracks/{trackId}", summary="Возвращает файл конкретного трека"
+@app.get(
+    "/tracks/{trackId}/download", summary="Возвращает файл конкретного трека"
 )
 async def get_track_info(trackId: int):
     track = crud.get_track(trackId)
     if track != None:
-        result = crud.download_track_file(str(track["trackID"]))
-        return
-    return JSONResponse(status_code=404, content={"message": "Item not found"})'''
+        name = str(track["name"])
+        path = f"{name}.mp3"
+        result = crud.get_track_file(str(track["trackID"]), path)
+        return FileResponse(path, media_type="audio/mp3")
+    return JSONResponse(status_code=404, content={"message": "Item not found"})
 
 
 @app.put(

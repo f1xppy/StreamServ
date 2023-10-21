@@ -121,9 +121,22 @@ def delete_album(ID:int):
 
 
 def delete_track(ID: int):
+    client = minio.Minio(
+        '127.0.0.1:9000',
+        access_key=cfg.minio_access_key,
+        secret_key=cfg.minio_secret_key,
+        secure=False
+    )
+    bucketName = "tracks"
+    found = client.bucket_exists(bucketName)
+    if not found:
+        client.make_bucket(bucketName)
+    objectName = str(ID)
+
     track = db.track.find_one({"trackID": ID}, {"_id": 0})
     if track != None:
         db.track.delete_one({"trackID": ID})
+        client.remove_object(bucketName, objectName)
         return JSONResponse(status_code=200, content={"message": "Item successfully deleted"})
     return JSONResponse(status_code=404, content={"message": "Item not found"})
 
@@ -141,10 +154,13 @@ def upload_track_file(file: File, ID: int):
     if not found:
         client.make_bucket(bucketName)
     objectName = str(ID)
-    client.fput_object(bucketName, objectName, file.file.fileno(), "audio/*")
+    if file.content_type != "audio/mp3":
+        return True
+    client.fput_object(bucketName, objectName, file.file.fileno(), "audio/mp3")
+    return False
 
 
-'''def download_track_file(ID: str):
+def get_track_file(ID: str, path:str):
     client = minio.Minio(
         '127.0.0.1:9000',
         access_key=cfg.minio_access_key,
@@ -156,4 +172,5 @@ def upload_track_file(file: File, ID: int):
     found = client.bucket_exists(bucketName)
     if not found:
         return 0
-    return client.fget_object(bucketName, ID, )'''
+    result = client.fget_object(bucketName, ID, path)
+    return result
