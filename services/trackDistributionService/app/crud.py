@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 import minio
 from fastapi import File
 from .database.database import cfg
+import os
 
 
 def create_author(result: Author):

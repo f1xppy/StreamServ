@@ -51,10 +51,9 @@ async def add_album(album: AlbumBase):
 @app.post(
     "/tracks", status_code=203, response_model=Track, summary='Добавляет трек в базу     {"name": "sdgsfgsd", "authorID": 1, "featuringAuthorID": [], "albumID": 1}'
 )
-#{"name": "sdgsfgsd", "authorID": 1, "featuringAuthorID": [], "albumID": 1}
 async def add_track(file: UploadFile, track=Body()):
     try:
-        track = TrackBase(**json.loads(track))
+        track_ = TrackBase(**json.loads(track))
     except Exception:
         return JSONResponse(status_code=422, content={"message": "Wrong input"})
 
@@ -63,10 +62,12 @@ async def add_track(file: UploadFile, track=Body()):
         trackId = 1
     else:
         trackId = int(_track["trackID"])+1
-    result = Track(**track.dict(), trackID=trackId)
+    result = Track(**track_.dict(), trackID=trackId)
     error = crud.upload_track_file(file, result.trackID)
     if error:
+        os.close(file.file.fileno())
         return JSONResponse(status_code=422, content={"message": "File is not .mp3"})
+    os.close(file.file.fileno())
     return crud.create_track(result)
 
 

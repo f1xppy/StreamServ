@@ -11,7 +11,7 @@ FAKE_TRACK_INFO = {
 class TrackBase(BaseModel):
     name: str = Field(title="Название трека")
     authorID: int = Field(title="Идентификатор исполнителя")
-    featuringAuthorID: Optional[list[int]] = Field(title="Идентификаторы других исполнителей")
+    featuringAuthorID: Optional[list[int]] = Field(title="Идентификаторы других исполнителей", default=[])
     albumID: int = Field(title="Идентификатор альбома")
 
 
