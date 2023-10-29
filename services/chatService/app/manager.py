@@ -12,10 +12,12 @@ class ConnectionManager:
         await websocket.close()
 
     @staticmethod
-    async def send_message(userID: int, message: bytes, websocket: WebSocket):
-        message = json.loads(message.decode("utf-8"))
+    async def send_message(userID: int, message: str, websocket: WebSocket):
+        '''message = json.loads(message.decode("utf-8"))
         receiverID = message.get("receiverID")
         senderID = message.get("senderID")
         messageObject = message.get("message", {})
         if userID == senderID or userID == receiverID:
-            await websocket.send_json(messageObject)
+            await websocket.send_json(messageObject)'''
+
+        await websocket.send_text(message)
