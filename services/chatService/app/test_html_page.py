@@ -1,0 +1,59 @@
+from jinja2 import Template
+
+
+html_content = """
+<!DOCTYPE html> 
+<html>
+<head>
+    <title>WebSocket Chat</title>
+</head>
+<body>
+    <div>
+        <input type="text" id="receiver" placeholder="receiver ID" />
+        <input type="text" id="message" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <ul id="chat"></ul>
+    <div>
+        <h2>Sent Messages:</h2>
+        <ul id="sentMessages"></ul>
+    </div>
+    <div>
+    <h2>Received Messages:</h2>
+    <ul id="receivedMessages"></ul>
+    </div>
+    <script>
+        var receivedMessages = document.getElementById("receivedMessages");
+        var sentMessages = document.getElementById("sentMessages");
+
+        var socket = new WebSocket("ws://localhost:5000/ws/{{ user_id }}");
+        socket.onmessage = function(event) {
+            var message = JSON.parse(event.data);
+            if (message.receiver == "{{ user_id }}") {
+                receivedMessages.innerHTML += "<li><strong>" + message.sender + ":</strong> " + message.text + "</li>";
+            }
+            if (message.sender == "{{ user_id }}") {
+                sentMessages.innerHTML += "<li><strong>" + message.receiver + ":</strong> " + message.text + "</li>";
+            }
+        };
+
+        function sendMessage() {
+            var receiverInput = document.getElementById("receiver");
+            var messageInput = document.getElementById("message");
+            var receiver = receiverInput.value;
+            var message = messageInput.value;
+            if (receiver && message) {
+                socket.send(JSON.stringify({ sender: "{{ user_id }}", receiver: receiver, text: message }));
+                messageInput.value = "";
+                receiverInput.value = "";
+
+                var sentMessages = document.getElementById("sentMessages");
+                sentMessages.innerHTML += "<li><strong>" + receiver + ":</strong> " + message + "</li>";
+            }
+        }
+    </script>
+</body>
+</html>
+"""
+
+template = Template(html_content)
