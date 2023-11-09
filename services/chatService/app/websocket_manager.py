@@ -1,4 +1,4 @@
-from .models import Message
+from app.schemas.models import Message
 from .database import save_message_to_mysql, mysql_connection
 
 

@@ -1,5 +1,5 @@
 import pymysql.cursors
-from .models import Message
+from app.schemas.models import Message
 
 mysql_connection = pymysql.connect(
     host="localhost",

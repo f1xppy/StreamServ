@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 import json
 from .test_html_page import template
 from .database import create_table
-from .models import Message
+from app.schemas.models import Message
 from .websocket_manager import get_messages, send_message
 
 
