@@ -60,11 +60,30 @@ services:
 
 
   trackdistributionservice:
+    build:
+      context: ../services/trackDistributionService
+      dockerfile: ./Dockerfile
     image: streamserv/trackdistributionservice:0.0.2
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - MONGO_DSN=mongodb://StreamServ:StreamServ@127.0.0.1:27017
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_HOSTNAME=minio
+
+  chatservice:
+    build:
+      context: ../services/chatService
+      dockerfile: ./Dockerfile
+    image: streamserv/chatservice:0.0.2
+    ports:
+      - "5002:5000"
+    environment:
+      - MYSQL_USER=streamserv
+      - MYSQL_HOST=localhost
+      - MYSQL_PASSWORD=streamserv
+      - MYSQL_DATABASE=streamserv
+      - WS_PROTOCOL=ws
+      - WS_HOST=localhost
+      - WS_PORT=5000
