@@ -77,11 +77,13 @@ services:
       context: ../services/chatService
       dockerfile: ./Dockerfile
     image: streamserv/chatservice:0.0.2
+    links:
+      - mysql:mysql
     ports:
       - "5002:5000"
     environment:
       - MYSQL_USER=streamserv
-      - MYSQL_HOST=localhost
+      - MYSQL_HOST=mysql
       - MYSQL_PASSWORD=streamserv
       - MYSQL_DATABASE=streamserv
       - WS_PROTOCOL=ws
