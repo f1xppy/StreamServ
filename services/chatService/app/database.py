@@ -1,11 +1,15 @@
 import pymysql.cursors
 from app.schemas.models import Message
+from . import config
+
+
+cfg: config.Config = config.load_config()
 
 mysql_connection = pymysql.connect(
-    host="localhost",
-    user="streamserv",
-    password="streamserv",
-    database="streamserv",
+    host=cfg.mysql_host,
+    user=cfg.mysql_user,
+    password=cfg.mysql_password,
+    database=cfg.mysql_database,
     cursorclass=pymysql.cursors.DictCursor
 )
 

@@ -14,4 +14,3 @@ def get_messages(user_id: str):
     messages = cursor.fetchall()
     cursor.close()
     return messages
-

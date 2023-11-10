@@ -1,8 +1,4 @@
-from jinja2 import Template
-
-
-html_content = """
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
     <title>WebSocket Chat</title>
@@ -26,7 +22,7 @@ html_content = """
         var receivedMessages = document.getElementById("receivedMessages");
         var sentMessages = document.getElementById("sentMessages");
 
-        var socket = new WebSocket("ws://localhost:5000/ws/{{ user_id }}");
+        var socket = new WebSocket("{{ ws_cfg }}{{ user_id }}");
         socket.onmessage = function(event) {
             var message = JSON.parse(event.data);
             if (message.receiver == "{{ user_id }}") {
@@ -54,6 +50,3 @@ html_content = """
     </script>
 </body>
 </html>
-"""
-
-template = Template(html_content)
