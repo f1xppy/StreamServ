@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "superusers"
+  },
+  {
+    "id": 2,
+    "name": "users"
+  },
+  {
+    "id": 3,
+    "name": "authors"
+  }
+]
