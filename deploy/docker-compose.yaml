@@ -94,14 +94,14 @@ services:
     build:
       context: ../services/userService
       dockerfile: ./Dockerfile
-    image: streamserv/chatservice:0.0.2
+    image: streamserv/userservice:0.0.2
     links:
       - mysql:mysql
     ports:
       - "5003:5000"
     environment:
-      - MYSQL_DSN='mysql+asyncmy://streamserv:streamserv@127.0.0.1/streamserv'
-      - MAIL_USERNAME='streamserv@inbox.ru'
-      - MAIL_PASSWORD='brBLU4Wmffrb8M2nrUXv'
+      - MYSQL_DSN=mysql+asyncmy://streamserv:streamserv@mysql/streamserv
+      - MAIL_USERNAME=streamserv@inbox.ru
+      - MAIL_PASSWORD=brBLU4Wmffrb8M2nrUXv
       - MAIL_PORT=465
-      - MAIL_SERVER='smtp.mail.ru'
+      - MAIL_SERVER=smtp.mail.ru
